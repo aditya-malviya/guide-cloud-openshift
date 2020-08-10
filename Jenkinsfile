@@ -1,16 +1,31 @@
 pipeline {
+  environment {
+    registry = "malviyaet/sampleqa"
+    registryCredential = 'Mangalam@31'
+    dockerImage = ''
+  }
   agent any
-   stages {
-      stage ('Test') {
-        steps {
-          sh label: '', 
-           script: 
-           '''
-           oc version
-           oc login --token=T0ujqgDvlARrDVcH48s9fp57XBraKTfE6pTG2q_zK0s --server=https://api.ca-central-1.starter.openshift-online.com:6443
-           oc get projects
-           '''
-         } 
+  stages {
+    stage('Building image') {
+      steps{
+        script {
+          dockerImage = docker.build registry + ":$BUILD_NUMBER"
+        }
       }
-   }
+    }
+    stage('Deploy Image') {
+      steps{
+        script {
+          docker.withRegistry( '', registryCredential ) {
+            dockerImage.push()
+          }
+        }
+      }
+    }
+    stage('Remove Unused docker image') {
+      steps{
+        sh "docker rmi $registry:$BUILD_NUMBER"
+      }
+    }
+  }
 }
