@@ -6,7 +6,7 @@ pipeline {
           sh label: '', 
            script: 
            '''
-           echo "test"
+           oc version
            '''
          } 
       }
